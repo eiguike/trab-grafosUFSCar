@@ -1,7 +1,6 @@
 // Trabalho 1 - Teoria dos Grafos
 
 // Nome: Henrique Teruo Eihara    RA: 490016
-// Nome: Valdeir Soares Perozim   RA: 
 
 #include <stdio.h>
 #include <stdlib.h>
