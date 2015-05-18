@@ -69,7 +69,7 @@ void limparLista(Lista * n){
 }
 
 int maiorCaminho(Lista * atual, int * loucuras, int dist){
-  Lista * aux = NULL;
+  int distOriginal = dist;
   int auxMaior = 0;
   if(atual == NULL){
     return 0;
@@ -83,9 +83,13 @@ int maiorCaminho(Lista * atual, int * loucuras, int dist){
     }
 
     while(atual->prox != NULL){
-      dist = maiorCaminho(&listaAdjacencia[atual->prox->rotulo],loucuras, dist+1);
+      if(atual->rotulo == 0)
+        dist = 0;
+      dist = maiorCaminho(&listaAdjacencia[atual->prox->rotulo],loucuras, distOriginal+1);
       if(dist > auxMaior)
         auxMaior = dist;
+
+      printf("auxMaior: %d\n",auxMaior);
 
       loucuras[atual->rotulo] = 2;
       atual = atual->prox;
@@ -98,10 +102,12 @@ int maiorCaminho(Lista * atual, int * loucuras, int dist){
 }
 
 int main(){
+  // primeira linha de entrada
   int n,m;
   int i;
+
+  // segunda linhas de entrada
   int n1,m1;
-  int flag = 0;
 
   int maiorTamanho = 0;
 
