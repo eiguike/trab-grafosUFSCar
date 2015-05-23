@@ -7,11 +7,14 @@
 typedef struct lista{
   struct lista * prox;
   int rotulo;
-  int dist;
 }Lista;
 
+// PEDRERAGEM MODE ON
 int * vertices = NULL;
+int * pred = NULL;
+int * dist = NULL;
 Lista * listaAdjacencia = NULL;
+Lista * fila = NULL;
 
 Lista * criarLista(int vertices){
   Lista * lista = malloc(sizeof(Lista)*vertices);
@@ -20,10 +23,66 @@ Lista * criarLista(int vertices){
   for(i=0;i<vertices;i++){
     lista[i].prox = NULL;
     lista[i].rotulo = i;
-    lista[i].dist = 0;
   }
 
   return lista;
+}
+
+// funções para fila
+int entraFila(int n){
+
+  if(fila == NULL){
+    fila = malloc(sizeof(Lista)*1);
+    fila->rotulo = n;
+    fila->prox = NULL;
+
+    return 1;
+  }
+
+  Lista * aux = fila;
+
+  while(aux->prox != NULL){
+    aux = aux->prox;
+  }
+  aux->prox = malloc(sizeof(Lista)*1);
+  aux->prox->rotulo = n;
+  aux->prox->prox = NULL;
+
+  return 2;
+}
+int removeFila(){
+  if(fila == NULL)
+    return -1;
+
+  Lista * aux = fila;
+  int aux2;
+  fila = fila->prox;
+  aux2 = aux->rotulo;
+  free(aux);
+
+  return aux2;
+}
+
+int filaVazia(){
+  if(fila == NULL)
+    return 1;
+  else
+    return 0;
+}
+
+void inicializaVariaveis(int n){
+  int i;
+
+  dist = (int*)malloc(sizeof(int)*n);
+  pred = (int*)malloc(sizeof(int)*n);
+  vertices = (int*) malloc(sizeof(int)*n);
+
+  for(i=0;i<n;i++){
+    dist[i] = -1;
+    pred[i] = -1;
+    vertices[i] = 0;
+  }
+
 }
 
 void inserirLista(Lista * n, int rotulo){
@@ -61,44 +120,36 @@ void limparLista(Lista * n){
 
   if(n->prox != NULL){
     limparLista(n->prox);
-  }else{
-    return;
   }
   free(n);
   return;
 }
 
-int maiorCaminho(Lista * atual, int * loucuras, int dist){
-  int distOriginal = dist;
-  int auxMaior = 0;
-  if(atual == NULL){
-    return 0;
-  }else{
-    printf("passei pelo vertice %d HEUHEUHUE\n",atual->rotulo);
-    if(loucuras[atual->rotulo] == 0){
-      // quer dizer que não foi passado ainda
-      loucuras[atual->rotulo] = 1;
-    }else{
-      return dist-1;
+int buscaEmLargura(Lista * atual, int n){
+  Lista * aux = NULL;
+  int verticeAtual;
+  int maior = 0;
+
+  while(!filaVazia()){
+    verticeAtual = removeFila();
+    aux = atual[verticeAtual].prox;
+    while(aux != NULL){
+      if(vertices[aux->rotulo] == 0){
+        entraFila(aux->rotulo);
+        dist[aux->rotulo] = dist[verticeAtual] + 1;
+
+        // condição ternária
+        maior = maior < dist[aux->rotulo] ? dist[aux->rotulo] : maior;
+        pred[aux->rotulo] = verticeAtual;
+        vertices[aux->rotulo] = 1;
+      }
+      aux = aux->prox;
     }
-
-    while(atual->prox != NULL){
-      if(atual->rotulo == 0)
-        dist = 0;
-      dist = maiorCaminho(&listaAdjacencia[atual->prox->rotulo],loucuras, distOriginal+1);
-      if(dist > auxMaior)
-        auxMaior = dist;
-
-      printf("auxMaior: %d\n",auxMaior);
-
-      loucuras[atual->rotulo] = 2;
-      atual = atual->prox;
-    }
+    // pintando de preto
+    vertices[verticeAtual] = 2;
   }
 
-  loucuras[atual->rotulo] = 2;
-
-  return auxMaior > dist ? auxMaior : dist;
+  return maior;
 }
 
 int main(){
@@ -112,25 +163,29 @@ int main(){
   int maiorTamanho = 0;
 
   scanf("%d %d",&n,&m);
-  vertices = calloc(n,sizeof(int));
-  listaAdjacencia = criarLista(n);
 
   while(n!=0 && m!=0){
+    listaAdjacencia = criarLista(n);
     for(i=0;i<m;i++){
       scanf("%d %d",&n1,&m1);
       inserirLista(&listaAdjacencia[n1],m1);
     }
 
+    // prepara vetores necessários para busca em largura
+    inicializaVariaveis(n);
+
+    // passos iniciais
+    entraFila(0);
+    vertices[0] = 1;
+    dist[0] = 0;
+    pred[0] = -1;
+
     //função que descobre os roles
-    maiorTamanho = maiorCaminho(&listaAdjacencia[0], vertices, 0);
+    maiorTamanho = buscaEmLargura(&listaAdjacencia[0], n);
 
-    printf("LISTA de ADJACENCIA:\n");
-    for(i=0;i<m;i++)
-      printarLista(&listaAdjacencia[i]);
-
-    printf("VETOR LOUCO:\n");
+    //printf("VETOR LOUCO:\n");
     for(i=0;i<n;i++){
-      printf("%d:%d, ",i,vertices[i]);
+      //printf("%d:%d, ",i,vertices[i]);
       if(vertices[i] == 0)
         maiorTamanho = -1;
     }
@@ -140,18 +195,21 @@ int main(){
     else
       printf("%d\n",maiorTamanho);
 
+    //for(i=0;i<n;i++)
+      //printf("%d, ",pred[i]);
+    //printf("\n");
 
     // limpar memorias alocadas
-    for(i=0;i<m;i++){
+    for(i=0;i<n;i++){
       limparLista(listaAdjacencia[i].prox);
     }
+    free(dist);
+    free(pred);
     free(vertices);
     free(listaAdjacencia);
 
     // começa tudo denovo
     scanf("%d %d",&n,&m);
-    vertices = calloc(m,sizeof(int));
-    listaAdjacencia = criarLista(m);
     maiorTamanho = 0;
   }
 
