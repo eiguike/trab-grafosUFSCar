@@ -17,6 +17,12 @@ int * dist = NULL;
 Lista * listaAdjacencia = NULL;
 Lista * fila = NULL;
 
+//typedef struct fila{
+  //int * vetor;
+  //int comeco;
+  //int fim;
+//}Fila;
+
 // função que inicializa lista
 Lista * criarLista(int vertices){
   Lista * lista = malloc(sizeof(Lista)*vertices);
@@ -97,22 +103,18 @@ void inicializaVariaveis(int n){
 // na lista
 void inserirLista(int rotulo1, int rotulo2){
   Lista * aux = &listaAdjacencia[rotulo1];
+  Lista * aux2 = aux->prox;
 
-  while(aux->prox != NULL){
-    aux = aux->prox;
-  }
   aux->prox = malloc(sizeof(Lista));
   aux->prox->rotulo = rotulo2;
-  aux->prox->prox = NULL;
+  aux->prox->prox = aux2;
 
   aux = &listaAdjacencia[rotulo2];
+  aux2 = aux->prox;
 
-  while(aux->prox != NULL){
-    aux = aux->prox;
-  }
   aux->prox = malloc(sizeof(Lista));
   aux->prox->rotulo = rotulo1;
-  aux->prox->prox = NULL;
+  aux->prox->prox = aux2;
 }
 
 void inserirLista2(Lista * n, int rotulo){
@@ -237,13 +239,13 @@ int main(){
       printf("%d\n",maiorTamanho);
 
     // desaloca variáveis
-    //for(i=0;i<n;i++){
-      //limparLista(listaAdjacencia[i].prox);
-    //}
-    //free(dist);
-    //free(pred);
-    //free(vertices);
-    //free(listaAdjacencia);
+    for(i=0;i<n;i++){
+      limparLista(listaAdjacencia[i].prox);
+    }
+    free(dist);
+    free(pred);
+    free(vertices);
+    free(listaAdjacencia);
 
     // começa tudo denovo
     scanf("%d %d",&n,&m);
