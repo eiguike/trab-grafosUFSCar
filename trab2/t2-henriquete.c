@@ -4,18 +4,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// estrutura de dados de lista ligada
 typedef struct lista{
   struct lista * prox;
   int rotulo;
 }Lista;
 
-// PEDRERAGEM MODE ON
+// vivendo perigosamente
 int * vertices = NULL;
 int * pred = NULL;
 int * dist = NULL;
 Lista * listaAdjacencia = NULL;
 Lista * fila = NULL;
 
+// função que inicializa lista
 Lista * criarLista(int vertices){
   Lista * lista = malloc(sizeof(Lista)*vertices);
   int i;
@@ -31,6 +33,8 @@ Lista * criarLista(int vertices){
 // funções para fila
 int entraFila(int n){
 
+  // quando a fila esta vazia, ja é criado um
+  // elemento e então retornado
   if(fila == NULL){
     fila = malloc(sizeof(Lista)*1);
     fila->rotulo = n;
@@ -39,6 +43,8 @@ int entraFila(int n){
     return 1;
   }
 
+  // caso a fila não esteja vazia, é inserido
+  // por último o elemento
   Lista * aux = fila;
 
   while(aux->prox != NULL){
@@ -50,6 +56,7 @@ int entraFila(int n){
 
   return 2;
 }
+
 int removeFila(){
   if(fila == NULL)
     return -1;
@@ -70,6 +77,8 @@ int filaVazia(){
     return 0;
 }
 
+// Função que inicializa os vetores
+// para a busca em largura
 void inicializaVariaveis(int n){
   int i;
 
@@ -82,10 +91,31 @@ void inicializaVariaveis(int n){
     pred[i] = -1;
     vertices[i] = 0;
   }
-
 }
 
-void inserirLista(Lista * n, int rotulo){
+// Função que realiza a inserção de elementos
+// na lista
+void inserirLista(int rotulo1, int rotulo2){
+  Lista * aux = &listaAdjacencia[rotulo1];
+
+  while(aux->prox != NULL){
+    aux = aux->prox;
+  }
+  aux->prox = malloc(sizeof(Lista));
+  aux->prox->rotulo = rotulo2;
+  aux->prox->prox = NULL;
+
+  aux = &listaAdjacencia[rotulo2];
+
+  while(aux->prox != NULL){
+    aux = aux->prox;
+  }
+  aux->prox = malloc(sizeof(Lista));
+  aux->prox->rotulo = rotulo1;
+  aux->prox->prox = NULL;
+}
+
+void inserirLista2(Lista * n, int rotulo){
   if(n->prox != NULL && (n->prox->rotulo > rotulo)){
     Lista * elemento = malloc(sizeof(Lista));
     elemento->rotulo = rotulo;
@@ -93,7 +123,7 @@ void inserirLista(Lista * n, int rotulo){
     n->prox = elemento;
   }else{
     if(n->prox != NULL){
-      inserirLista(n->prox, rotulo);
+      inserirLista2(n->prox, rotulo);
     }else{
       n->prox = malloc(sizeof(Lista));
       n->prox->prox = NULL;
@@ -104,6 +134,8 @@ void inserirLista(Lista * n, int rotulo){
   return;
 }
 
+// função de debug para imprimir
+// o que está contido na lista
 void printarLista(Lista * n){
   if(n->prox != NULL){
     printf("%d ",n->rotulo);
@@ -114,6 +146,8 @@ void printarLista(Lista * n){
   }
 }
 
+// limpa a lista, recebendo o primeiro
+// elemento da lista
 void limparLista(Lista * n){
   if(n == NULL)
     return;
@@ -148,7 +182,6 @@ int buscaEmLargura(Lista * atual, int n){
     // pintando de preto
     vertices[verticeAtual] = 2;
   }
-
   return maior;
 }
 
@@ -160,32 +193,40 @@ int main(){
   // segunda linhas de entrada
   int n1,m1;
 
-  int maiorTamanho = 0;
+  int maiorTamanho;
 
+  // recebe o númeor de vertices e número de arestas
   scanf("%d %d",&n,&m);
 
-  while(n!=0 && m!=0){
+  // loop principal
+  while(n!=0 || m!=0){
+    // inicializa as listas de adjacências
+    // para cada vertice
     listaAdjacencia = criarLista(n);
+
+    // define-se uma aresta entre dois vertices
+    // e insere na lista de adjacência
     for(i=0;i<m;i++){
       scanf("%d %d",&n1,&m1);
-      inserirLista(&listaAdjacencia[n1],m1);
+      inserirLista(n1,m1);
     }
 
     // prepara vetores necessários para busca em largura
     inicializaVariaveis(n);
 
-    // passos iniciais
+    // passos iniciais da busca em Largura
     entraFila(0);
     vertices[0] = 1;
     dist[0] = 0;
     pred[0] = -1;
 
-    //função que descobre os roles
+    // maior tamanho é retornado da função buscaEmLargura
     maiorTamanho = buscaEmLargura(&listaAdjacencia[0], n);
 
-    //printf("VETOR LOUCO:\n");
+    // verifica se o grafo é conexo
+    // se não for printa infinito
+    // caso contrario printa o maior caminho
     for(i=0;i<n;i++){
-      //printf("%d:%d, ",i,vertices[i]);
       if(vertices[i] == 0)
         maiorTamanho = -1;
     }
@@ -195,24 +236,19 @@ int main(){
     else
       printf("%d\n",maiorTamanho);
 
-    //for(i=0;i<n;i++)
-      //printf("%d, ",pred[i]);
-    //printf("\n");
-
-    // limpar memorias alocadas
-    for(i=0;i<n;i++){
-      limparLista(listaAdjacencia[i].prox);
-    }
-    free(dist);
-    free(pred);
-    free(vertices);
-    free(listaAdjacencia);
+    // desaloca variáveis
+    //for(i=0;i<n;i++){
+      //limparLista(listaAdjacencia[i].prox);
+    //}
+    //free(dist);
+    //free(pred);
+    //free(vertices);
+    //free(listaAdjacencia);
 
     // começa tudo denovo
     scanf("%d %d",&n,&m);
     maiorTamanho = 0;
   }
-
 
   return 0;
 }
