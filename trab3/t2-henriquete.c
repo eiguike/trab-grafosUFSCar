@@ -14,7 +14,7 @@ typedef struct lista{
 // vivendo perigosamente
 int * vertices = NULL;
 int * pred = NULL;
-int * dist = NULL;
+int * cor = NULL;
 int * tempo = NULL;
 Lista * listaAdjacencia = NULL;
 Lista * fila = NULL;
@@ -38,13 +38,13 @@ Lista * criarLista(int vertices){
 void inicializaVariaveis(int n){
   int i;
 
-  dist = (int*)malloc(sizeof(int)*n);
+  cor = (int*)malloc(sizeof(int)*n);
   pred = (int*)malloc(sizeof(int)*n);
   vertices = (int*) malloc(sizeof(int)*n);
   tempo = (int*) malloc(sizeof(int)*n);
 
   for(i=0;i<n;i++){
-    dist[i] = -1;
+    cor[i] = -1;
     pred[i] = -1;
     vertices[i] = 0;
   }
@@ -94,12 +94,28 @@ void limparLista(Lista * n){
   return;
 }
 
-int buscaEmProfundidade(Lista * atual, int n){
+int buscaEmProfundidade(int n, int * iteracao){
+  cor[n] = 1;
+  tempo[n] = iteracao;
+
+  Lista * aux = listaAdjacencia[n];
+  while(aux->prox != NULL){
+    if(cor[aux->rotulo] == 0){
+      pred[aux->rotulo] = n;
+      buscaEmProfundidade(aux->rotulo)
+    }
+  }
+
+
+
+
+
 
 
 }
 
 int main(){
+  int iteracao;
   // primeira linha de entrada
   int n,m;
   int i;
@@ -118,6 +134,7 @@ int main(){
     // para cada vertice
     listaAdjacencia = criarLista(n);
     principaisPesos = malloc(sizeof(int)*n);
+    iteracao = 0;
 
     for(i=0;i<n;i++)
     	scanf("%d",&principaisPesos[i]);
@@ -134,11 +151,13 @@ int main(){
     // passos iniciais da busca em Largura
     entraFila(0);
     vertices[0] = 1;
-    dist[0] = 0;
+    cor[0] = 0;
     pred[0] = -1;
 
     // maior tamanho é retornado da função buscaEmProfundidade 
-    maiorTamanho = buscaEmProfundidade(&listaAdjacencia[0], n);
+    for(i=0;i<n;i++){
+      maiorTamanho = buscaEmProfundidade(n, &iteracao);
+    }
 
     // verifica se o grafo é conexo
     // se não for printa infinito
@@ -156,8 +175,8 @@ int main(){
     // desaloca variáveis
     for(i=0;i<n;i++){
       limparLista(listaAdjacencia[i].prox);
-    }
-    free(dist);
+iteracao
+    free(cor);
     free(pred);
     free(vertices);
     free(listaAdjacencia);
