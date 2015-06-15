@@ -12,10 +12,11 @@ typedef struct lista{
 }Lista;
 
 // vivendo perigosamente
-int * vertices = NULL;
-int * pred = NULL;
 int * cor = NULL;
-int * tempo = NULL;
+int * pred = NULL;
+int * encontro = NULL;
+int * final = NULL;
+int tempo = 0;
 Lista * listaAdjacencia = NULL;
 Lista * fila = NULL;
 int * principaisPesos = NULL;
@@ -40,13 +41,16 @@ void inicializaVariaveis(int n){
 
   cor = (int*)malloc(sizeof(int)*n);
   pred = (int*)malloc(sizeof(int)*n);
-  vertices = (int*) malloc(sizeof(int)*n);
-  tempo = (int*) malloc(sizeof(int)*n);
+  encontro = (int*) malloc(sizeof(int)*n);
+  final = (int*) malloc(sizeof(int)*n);
+
+  tempo = 0;
 
   for(i=0;i<n;i++){
-    cor[i] = -1;
+    cor[i] = 0;
     pred[i] = -1;
-    vertices[i] = 0;
+    encontro[i] = -1;
+    final[i] = -1;
   }
 }
 
@@ -94,24 +98,23 @@ void limparLista(Lista * n){
   return;
 }
 
-int buscaEmProfundidade(int n, int * iteracao){
-  cor[n] = 1;
-  tempo[n] = iteracao;
+int DFS (int vertice){
+  cor[vertice] = 1;
+  encontro[vertice] = tempo;
+  tempo+=1;
 
-  Lista * aux = listaAdjacencia[n];
+  Lista * aux = &listaAdjacencia[vertice];
+
   while(aux->prox != NULL){
-    if(cor[aux->rotulo] == 0){
-      pred[aux->rotulo] = n;
-      buscaEmProfundidade(aux->rotulo)
+    if(cor[aux->prox->rotulo] == 0){
+      pred[vertice] = aux->prox->rotulo;
+      DFS(aux->prox->rotulo);
     }
   }
 
-
-
-
-
-
-
+  cor[vertice] = 2;
+  final[vertice] = tempo;
+  tempo+=1;
 }
 
 int main(){
@@ -133,11 +136,11 @@ int main(){
     // inicializa as listas de adjacências
     // para cada vertice
     listaAdjacencia = criarLista(n);
-    principaisPesos = malloc(sizeof(int)*n);
+    //principaisPesos = malloc(sizeof(int)*n);
     iteracao = 0;
 
     for(i=0;i<n;i++)
-    	scanf("%d",&principaisPesos[i]);
+    	scanf("%d",listaAdjacencia[i].peso);
 
     // define-se uma aresta entre dois vertices
     // e insere na lista de adjacência
@@ -149,39 +152,41 @@ int main(){
     inicializaVariaveis(n);
 
     // passos iniciais da busca em Largura
-    entraFila(0);
-    vertices[0] = 1;
-    cor[0] = 0;
-    pred[0] = -1;
 
     // maior tamanho é retornado da função buscaEmProfundidade 
     for(i=0;i<n;i++){
-      maiorTamanho = buscaEmProfundidade(n, &iteracao);
+      maiorTamanho = DFS(i);
     }
 
-    // verifica se o grafo é conexo
-    // se não for printa infinito
-    // caso contrario printa o maior caminho
+    printf("cor\n");
     for(i=0;i<n;i++){
-      if(vertices[i] == 0)
-        maiorTamanho = -1;
+      printf("%d %d, ",i, cor[i]);
     }
 
-    if(maiorTamanho == -1)
-      printf("infinito\n");
-    else
-      printf("%d\n",maiorTamanho);
+    printf("pred\n");
+    for(i=0;i<n;i++){
+      printf("%d %d, ",i, pred[i]);
+    }
+
+    printf("encontro\n");
+    for(i=0;i<n;i++){
+      printf("%d %d, ",i, encontro[i]);
+    }
+
+    printf("final\n");
+    for(i=0;i<n;i++){
+      printf("%d %d, ",i, final[i]);
+    }
 
     // desaloca variáveis
     for(i=0;i<n;i++){
       limparLista(listaAdjacencia[i].prox);
-iteracao
+    }
     free(cor);
     free(pred);
-    free(vertices);
     free(listaAdjacencia);
     free(principaisPesos);
-    free(tempo);
+    free(encontro);
 
     // começa tudo denovo
     scanf("%d %d",&n,&m);
