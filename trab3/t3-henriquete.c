@@ -173,18 +173,24 @@ int main(){
         DFS(i);
     }
 
+    // vetor utilizado para ordenar topologicamente o grafo gerado
     pesos = (int*) malloc(sizeof(int)*tempo);
 
+    // inicializa vetor
     for(i=0;i<tempo;i++){
       pesos[i] = -1;
-   } 
+    } 
 
+    // preenche peso com o tempo final determiando
+    // pela busca em profundidade
     for(i=0;i<n;i++){
       pesos[final[i]] = i;
     }
 
     int soma;
 
+    // busca no vetor de pesos (a ordenação topologica) e 
+    // realiza os horários acumulados para realização da tarefa
     for(i=tempo-1;i>=0;i--){
       if(pesos[i] != -1){
         aux = listaAdjacencia[pesos[i]].prox;
@@ -198,6 +204,7 @@ int main(){
       }
     }
 
+    // loop para apenas encontrar o maior valor
     for(i=0;i<n-1;i++){
       if(vetorAuxiliar[i] > vetorAuxiliar[i+1])
         vetorAuxiliar[i+1] = vetorAuxiliar[i]; 
