@@ -18,8 +18,10 @@ int * encontro = NULL;
 int * final = NULL;
 int tempo = 0;
 Lista * listaAdjacencia = NULL;
-Lista * fila = NULL;
+Lista * ordenacao = NULL;
 int * principaisPesos = NULL;
+int * pesos = NULL;
+int * vetorAuxiliar = NULL;
 
 // função que inicializa lista
 Lista * criarLista(int vertices){
@@ -58,12 +60,16 @@ void inicializaVariaveis(int n){
 // na lista
 void inserirLista(int rotulo1, int rotulo2){
   Lista * aux = &listaAdjacencia[rotulo1];
-  Lista * aux2 = aux->prox;
+  Lista * aux3 = aux;
 
-  aux->prox = malloc(sizeof(Lista));
-  aux->prox->rotulo = rotulo2;
-  aux->prox->peso = principaisPesos[rotulo2];
-  aux->prox->prox = aux2;
+  while(aux3->prox != NULL){
+    aux3 = aux3->prox; 
+  }
+
+  aux3->prox = malloc(sizeof(Lista));
+  aux3->prox->rotulo = rotulo2;
+  aux3->prox->peso = listaAdjacencia[rotulo2].peso;
+  aux3->prox->prox = NULL;
 
 //  aux = &listaAdjacencia[rotulo2];
 //  aux2 = aux->prox;
@@ -76,6 +82,8 @@ void inserirLista(int rotulo1, int rotulo2){
 // função de debug para imprimir
 // o que está contido na lista
 void printarLista(Lista * n){
+  if(n==NULL)
+    return;
   if(n->prox != NULL){
     printf("%d ",n->rotulo);
     printarLista(n->prox);
@@ -110,6 +118,7 @@ int DFS (int vertice){
       pred[vertice] = aux->prox->rotulo;
       DFS(aux->prox->rotulo);
     }
+    aux = aux->prox;
   }
 
   cor[vertice] = 2;
@@ -118,10 +127,11 @@ int DFS (int vertice){
 }
 
 int main(){
+  Lista * aux;
   int iteracao;
   // primeira linha de entrada
   int n,m;
-  int i;
+  int i,i2;
 
   // segunda linhas de entrada
   int n1,m1;
@@ -139,8 +149,12 @@ int main(){
     //principaisPesos = malloc(sizeof(int)*n);
     iteracao = 0;
 
-    for(i=0;i<n;i++)
-    	scanf("%d",listaAdjacencia[i].peso);
+
+    vetorAuxiliar = (int*)malloc(sizeof(int)*n);
+    for(i=0;i<n;i++){
+    	scanf("%d",&(listaAdjacencia[i].peso));
+      vetorAuxiliar[i] = listaAdjacencia[i].peso;
+    }
 
     // define-se uma aresta entre dois vertices
     // e insere na lista de adjacência
@@ -155,28 +169,41 @@ int main(){
 
     // maior tamanho é retornado da função buscaEmProfundidade 
     for(i=0;i<n;i++){
-      maiorTamanho = DFS(i);
+      if(cor[i] == 0)
+        DFS(i);
     }
 
-    printf("cor\n");
+    pesos = (int*) malloc(sizeof(int)*tempo);
+
+    for(i=0;i<tempo;i++){
+      pesos[i] = -1;
+   } 
+
     for(i=0;i<n;i++){
-      printf("%d %d, ",i, cor[i]);
+      pesos[final[i]] = i;
     }
 
-    printf("pred\n");
-    for(i=0;i<n;i++){
-      printf("%d %d, ",i, pred[i]);
+    int soma;
+
+    for(i=tempo-1;i>=0;i--){
+      if(pesos[i] != -1){
+        aux = listaAdjacencia[pesos[i]].prox;
+        while(aux != NULL){
+          soma = listaAdjacencia[aux->rotulo].peso + vetorAuxiliar[pesos[i]];
+          if(soma > vetorAuxiliar[aux->rotulo]){
+            vetorAuxiliar[aux->rotulo] = soma;
+          }
+          aux = aux->prox;
+        }
+      }
     }
 
-    printf("encontro\n");
-    for(i=0;i<n;i++){
-      printf("%d %d, ",i, encontro[i]);
+    for(i=0;i<n-1;i++){
+      if(vetorAuxiliar[i] > vetorAuxiliar[i+1])
+        vetorAuxiliar[i+1] = vetorAuxiliar[i]; 
     }
 
-    printf("final\n");
-    for(i=0;i<n;i++){
-      printf("%d %d, ",i, final[i]);
-    }
+    printf("%d\n", vetorAuxiliar[i]);
 
     // desaloca variáveis
     for(i=0;i<n;i++){
